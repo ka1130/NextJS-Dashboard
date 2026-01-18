@@ -16,6 +16,7 @@ const FormSchema = z.object({
 });
 
 const CreateInvoiceSchema = FormSchema.omit({ date: true, id: true });
+const UpdateInvoiceSchema = FormSchema.omit({ date: true });
 
 export async function createInvoice(formData: FormData) {
   // const rawFormData = {
@@ -38,6 +39,29 @@ export async function createInvoice(formData: FormData) {
   await sql`
     INSERT INTO invoices (customer_id, amount, status, date)
     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+  `;
+
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
+}
+
+// pass id to updateInvoice as arg and then read it in 63??
+export async function updateInvoice(formData: FormData) {
+  //
+  const rawFormData = Object.fromEntries(formData.entries());
+  console.log('RAW FORM DATA: ', rawFormData);
+  console.log('ID:', formData.get('id'));
+  const { id, customerId, amount, status } =
+    UpdateInvoiceSchema.parse(rawFormData);
+  const amountInCents = amount * 100;
+
+  await sql`
+    UPDATE invoices
+    SET
+      customer_id = ${customerId},
+      status = ${status},
+      amount = ${amountInCents}
+    WHERE id = ${id};
   `;
 
   revalidatePath('/dashboard/invoices');
