@@ -7,9 +7,13 @@ export default async function Page({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const customers = await fetchCustomers();
   const { id } = await params;
-  const invoice = await fetchInvoiceById(id);
+
+  const [customers, invoice] = await Promise.all([
+    fetchCustomers(),
+    fetchInvoiceById(id),
+  ]);
+
   return (
     <main>
       <Breadcrumbs
@@ -17,7 +21,7 @@ export default async function Page({
           { label: 'Invoices', href: '/dashboard/invoices' },
           {
             label: 'Create Invoice',
-            href: '/dashboard/invoices/edit',
+            href: `/dashboard/invoices/${id}/edit`,
             active: true,
           },
         ]}
